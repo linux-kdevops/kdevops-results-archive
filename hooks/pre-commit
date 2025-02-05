@@ -1,0 +1,30 @@
+#!/bin/sh
+# This script will prevent large directory commits and .config file commits
+
+# Set a threshold for the maximum number of files in a directory
+MAX_FILES=5
+
+# Check for .config files
+config_files=$(git diff --cached --name-only | grep '\.config$')
+if [ -n "$config_files" ]; then
+    echo "Error: Attempting to commit .config files:"
+    echo "$config_files"
+    echo ""
+    echo "Please add the config files to their respective tarballs"
+    echo "and remove the original .config files before committing."
+    exit 1
+fi
+
+# Check for directories with more than MAX_FILES files
+directories=$(git diff --cached --name-only | xargs -n1 dirname | sort | uniq)
+for dir in $directories; do
+    file_count=$(git diff --cached --name-only -- "$dir" | wc -l)
+    if [ "$file_count" -gt "$MAX_FILES" ]; then
+        echo "Error: Directory '$dir' contains $file_count files."
+        echo "Please compress this directory into an .xz archive before committing."
+        exit 1
+    fi
+done
+
+# Allow commit if no large directories or .config files are found
+exit 0
