@@ -44,17 +44,17 @@ def parse_commit(commit_id):
     # Parse test profiles and their failures
     profiles = defaultdict(list)
 
-    # Find all profile sections
-    profile_sections = re.finditer(
-        r"^(xfs_\w+(?:_[a-zA-Z0-9]+)*): .*?\n(?:.*?\n)*?  Failures: (.*?)$",
-        log,
-        re.MULTILINE,
-    )
+    # Find all profile sections - modified to work with any filesystem prefix
+    # and to properly capture multi-line failure lists
+    profile_pattern = r"^(\w+(?:_[a-zA-Z0-9]+)*): .*?tests.*?\n(?:.*?\n)*?  Failures:(.*?)(?=\n\w+(?:_[a-zA-Z0-9]+)*: |\nTotals: |\n\n|\Z)"
+    profile_sections = re.finditer(profile_pattern, log, re.MULTILINE | re.DOTALL)
 
     for match in profile_sections:
         profile = match.group(1)
-        # Split failures and clean up each failure name
-        failures = [f.strip() for f in match.group(2).split()]
+        # Extract all failures, handling multi-line lists
+        failures_text = match.group(2).strip()
+        # Split by whitespace and filter out empty strings
+        failures = [f for f in re.split(r'\s+', failures_text) if f]
         profiles[profile] = failures
 
     return kernel_version, profiles
