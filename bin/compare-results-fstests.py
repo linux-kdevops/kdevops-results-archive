@@ -3,6 +3,7 @@
 import sys
 import re
 import subprocess
+import argparse
 from collections import defaultdict
 
 
@@ -67,7 +68,7 @@ def is_failure_present_in_any_profile(failure, profiles):
     return any(failure in failures for failures in profiles.values())
 
 
-def compare_results(baseline_id, test_id):
+def compare_results(baseline_id, test_id, verbose=False):
     """
     Compare test results between baseline and new test commit.
     """
@@ -92,10 +93,16 @@ def compare_results(baseline_id, test_id):
         print("No test profiles found in the commits")
         return
 
-    print("Test Results Comparison:")
+    if verbose:
+        print("Verbose Test Results Comparison:")
+    else:
+        print("Test Results Comparison:")
     print("=" * 80)
 
     found_changes = False
+    total_regressions = 0
+    total_fixes = 0
+    total_unchanged = 0
 
     for profile in all_profiles:
         baseline_failures = set(baseline_profiles.get(profile, []))
@@ -111,7 +118,33 @@ def compare_results(baseline_id, test_id):
             if not is_failure_present_in_any_profile(failure, test_profiles)
         }
 
-        if new_failures or resolved_failures:
+        if verbose:
+            # Create a set of all tests from both baseline and test
+            all_tests = baseline_failures.union(test_failures)
+            
+            if all_tests:  # Only display profiles with tests
+                print(f"\nProfile: {profile}")
+                print(f"{'':19} | {'BASELINE':<12} | {'TEST':<12}")
+                print(f"{'-'*19}|{'-'*14}|{'-'*14}")
+                
+                for test in sorted(all_tests):
+                    baseline_status = "[fail]" if test in baseline_failures else "[pass]"
+                    test_status = "[fail]" if test in test_failures else "[pass]"
+                    
+                    # Determine if this is a regression or fix
+                    status_indicator = ""
+                    if test in new_failures:
+                        status_indicator = "--> regression"
+                        total_regressions += 1
+                    elif test in resolved_failures:
+                        status_indicator = "--> fixed"
+                        total_fixes += 1
+                    else:
+                        total_unchanged += 1
+                        
+                    print(f"{test:19} | {baseline_status:<12} | {test_status:<12} {status_indicator}")
+            
+        elif new_failures or resolved_failures:
             found_changes = True
             print(f"\nProfile: {profile}")
 
@@ -119,24 +152,34 @@ def compare_results(baseline_id, test_id):
                 print("  New Failures:")
                 for failure in sorted(new_failures):
                     print(f"    + {failure}")
+                total_regressions += len(new_failures)
 
             if resolved_failures:
                 print("  Resolved Failures:")
                 for failure in sorted(resolved_failures):
                     print(f"    - {failure}")
+                total_fixes += len(resolved_failures)
 
-    if not found_changes:
+    if verbose:
+        print("\nSummary:")
+        print(f"  - Total regressions: {total_regressions}")
+        print(f"  - Total fixes: {total_fixes}")
+        print(f"  - Unchanged failures: {total_unchanged}")
+    elif not found_changes:
         print("\nNo changes in test results between the commits")
 
 
 def main():
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <baseline-commit-id> <test-commit-id>")
-        sys.exit(1)
-
-    baseline_commit = sys.argv[1]
-    test_commit = sys.argv[2]
-    compare_results(baseline_commit, test_commit)
+    parser = argparse.ArgumentParser(
+        description="Compare fstests results between two commits"
+    )
+    parser.add_argument("baseline", help="Baseline commit ID")
+    parser.add_argument("test", help="Test commit ID")
+    parser.add_argument("-v", "--verbose", action="store_true", 
+                       help="Show verbose output with detailed comparison tables")
+    
+    args = parser.parse_args()
+    compare_results(args.baseline, args.test, args.verbose)
 
 
 if __name__ == "__main__":
