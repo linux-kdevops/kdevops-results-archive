@@ -15,16 +15,13 @@ stands without LFS if you clone this git tree you'd have to download
 218M, if you use GIT_LFS_SKIP_SMUDGE=1 before the clone to avoid downloading
 all the files you'd just get a 2.5M directory, for a 98.85% of space savings.
 
-To leverage LFS:
+To leverage LFS with an example:
 
 ```bash
-    GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/linux-kdevops/kdevops-results-archive.git
-```
-
-To get the file you want:
-
-```
-    git lfs fetch --include "fstests/mcgrof/xfs/libvirt-qemu/20240514-0001/6.9.0-rc6+.xz"
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/linux-kdevops/kdevops-results-archive.git
+cd kdevops-results-archive
+git lfs fetch --include "fstests/gh/linux-ext4-kpd/20250415/0001/linux-6-15-rc2/8ffd015db85f.xz
+git lfs checkout "fstests/gh/linux-ext4-kpd/20250415/0001/linux-6-15-rc2/8ffd015db85f.xz
 ```
 
 kdevops will automatically make use of the archive if you have it present.
