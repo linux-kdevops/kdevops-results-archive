@@ -3,9 +3,9 @@ name: Build and Deploy Dashboard
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -16,32 +16,29 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout source
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # we need full history to generate dashboard from first commit
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Generate dashboard from first commit
+      - name: Generate full dashboard from first commit
         run: |
           rm -rf dashboard
-          FIRST_COMMIT=$(git rev-list --max-parents=0 HEAD)
-          echo "Generating dashboard from first commit: $FIRST_COMMIT"
-          ./bin/gen-dashboard.py -s "$FIRST_COMMIT"
+          SHA=$(git rev-list --max-parents=0 HEAD)
+          echo "Regenerating dashboard from commit: $SHA"
+          ./bin/gen-dashboard.py -s "$SHA"
 
-      - name: Upload preview artifact (for PRs)
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v2
         with:
-          name: dashboard-preview
-          path: dashboard/
+          path: dashboard
 
       - name: Deploy to GitHub Pages
         if: github.event_name != 'pull_request'
         uses: actions/deploy-pages@v4
-        with:
-          build_dir: dashboard
