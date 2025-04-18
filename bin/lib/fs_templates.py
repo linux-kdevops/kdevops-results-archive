@@ -37,6 +37,21 @@ def create_html_template():
             color: #333;
             line-height: 1.6;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.05;
+            z-index: -1;
+        }
         
         .container {
             max-width: 1200px;
@@ -565,7 +580,6 @@ def create_html_template():
 </html>
 """
 
-
 def create_index_template():
     """
     Generate an HTML template for the filesystem index page.
@@ -598,12 +612,30 @@ def create_index_template():
             background-color: #f9f9f9;
             color: #333;
             line-height: 1.6;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.05;
+            z-index: -1;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 1;
         }
         
         header {
@@ -614,9 +646,24 @@ def create_index_template():
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .header-logo {
+            width: 50px;
+            height: 50px;
+            margin-left: 20px;
+            opacity: 0.8;
+        }
+        
         header h1 {
             margin: 0;
-            padding: 0 20px;
         }
         
         .panel-container {
@@ -627,7 +674,7 @@ def create_index_template():
         }
         
         .panel {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.95);
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -702,21 +749,57 @@ def create_index_template():
             padding: 10px;
         }
         
+        .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.2s;
+        }
+        
+        .back-link:hover {
+            background-color: #1a2530;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+        }
+        
         @media (max-width: 768px) {
             .panel-container {
                 grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-logo {
+                margin: 10px 0 0 0;
             }
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="container">
+        <div class="header-content">
             <h1>FILESYSTEM fstests results</h1>
+            <img src="https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png" alt="kdevops logo" class="header-logo">
         </div>
     </header>
     
     <div class="container">
+        <a href="../index.html" class="back-link">← Back to Main Dashboard</a>
+        
         <div class="panel-container">
             <!-- Stable Releases Panel -->
             <div class="panel stable-panel">
@@ -753,6 +836,10 @@ def create_index_template():
                     <div class="no-results">No development branch results available</div>
                 </div>
             </div>
+        </div>
+        
+        <div class="footer">
+            <p>kdevops: Linux Kernel Test Automation</p>
         </div>
     </div>
     

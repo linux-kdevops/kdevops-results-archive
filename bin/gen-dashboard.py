@@ -242,33 +242,32 @@ def generate_dashboard(commit_id, output_dir='.'):
     
     return result
 
-
 def create_master_index(output_dir):
     """
     Create a master index.html page that links to each filesystem directory.
     """
     # Find all subdirectories (filesystem types)
-    subdirs = [d for d in os.listdir(output_dir) 
+    subdirs = [d for d in os.listdir(output_dir)
                if os.path.isdir(os.path.join(output_dir, d)) and not d.startswith('.')]
-    
+
     if not subdirs:
         print("No test directories found, skipping master index creation")
         return
-    
+
     # Group directories by type
     fs_dirs = []
     special_dirs = []
-    
+
     for d in subdirs:
         if d in ['mm', 'kdevops']:
             special_dirs.append(d)
         else:
             fs_dirs.append(d)  # Filesystem directories
-    
+
     # Sort directories
     fs_dirs.sort()
     special_dirs.sort()
-    
+
     # Create simple HTML for master index
     html = """<!DOCTYPE html>
 <html lang="en">
@@ -283,26 +282,51 @@ def create_master_index(output_dir):
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: #f9f9f9;
             color: #333;
             line-height: 1.6;
             padding: 20px;
+            position: relative;
         }
-        
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
         h1 {
             color: #2c3e50;
             margin-bottom: 20px;
             text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        
+
         h2 {
             color: #3498db;
             margin: 30px 0 20px;
             text-align: center;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
-        
+
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -310,20 +334,20 @@ def create_master_index(output_dir):
             max-width: 1200px;
             margin: 0 auto 40px;
         }
-        
+
         .card {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             transition: transform 0.2s ease-in-out;
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
-        
+
         .fs-card .header {
             background-color: #2c3e50;
             color: white;
@@ -332,7 +356,7 @@ def create_master_index(output_dir):
             font-weight: bold;
             text-align: center;
         }
-        
+
         .mm-card .header {
             background-color: #673ab7;
             color: white;
@@ -341,7 +365,7 @@ def create_master_index(output_dir):
             font-weight: bold;
             text-align: center;
         }
-        
+
         .kdevops-card .header {
             background-color: #34495e;
             color: white;
@@ -350,12 +374,12 @@ def create_master_index(output_dir):
             font-weight: bold;
             text-align: center;
         }
-        
+
         .content {
             padding: 20px;
             text-align: center;
         }
-        
+
         .link {
             display: inline-block;
             padding: 10px 20px;
@@ -365,96 +389,117 @@ def create_master_index(output_dir):
             margin-top: 15px;
             transition: background-color 0.2s ease-in-out;
         }
-        
+
         .fs-link {
             background-color: #3498db;
             color: white;
         }
-        
+
         .fs-link:hover {
             background-color: #2980b9;
         }
-        
+
         .mm-link {
             background-color: #673ab7;
             color: white;
         }
-        
+
         .mm-link:hover {
             background-color: #5e35b1;
         }
-        
+
         .kdevops-link {
             background-color: #34495e;
             color: white;
         }
-        
+
         .kdevops-link:hover {
             background-color: #2c3e50;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .logo-small {
+            display: block;
+            width: 100px;
+            margin: 10px auto;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <h1>kdevops: Linux Kernel Test Results Dashboard</h1>
+    <div class="container">
+        <h1>kdevops: Linux Kernel Test Results Dashboard</h1>
 """
 
     # Add special directories section if any exist
     if special_dirs:
         html += """
-    <h2>Specialized Test Results</h2>
-    <div class="grid-container">
+        <h2>Specialized Test Results</h2>
+        <div class="grid-container">
 """
-        
+
         for d in special_dirs:
             if d == 'mm':
                 html += f"""
-        <div class="card mm-card">
-            <div class="header">Memory Management</div>
-            <div class="content">
-                <p>Memory Management test results including xarray, maple tree and more</p>
-                <a href="{d}/index.html" class="link mm-link">View Results</a>
+            <div class="card mm-card">
+                <div class="header">Memory Management</div>
+                <div class="content">
+                    <p>Memory Management test results including xarray, maple tree and more</p>
+                    <a href="{d}/index.html" class="link mm-link">View Results</a>
+                </div>
             </div>
-        </div>
 """
             elif d == 'kdevops':
                 html += f"""
-        <div class="card kdevops-card">
-            <div class="header">kdevops</div>
-            <div class="content">
-                <p>kdevops integration test results</p>
-                <a href="{d}/index.html" class="link kdevops-link">View Results</a>
+            <div class="card kdevops-card">
+                <div class="header">kdevops</div>
+                <div class="content">
+                    <p>kdevops integration test results</p>
+                    <a href="{d}/index.html" class="link kdevops-link">View Results</a>
+                </div>
             </div>
+"""
+
+        html += """
         </div>
 """
-        
-        html += """
-    </div>
-"""
-    
+
     # Add filesystem section if any exist
     if fs_dirs:
         html += """
-    <h2>Filesystem Test Results</h2>
-    <div class="grid-container">
-"""
-        
-        for d in fs_dirs:
-            html += f"""
-        <div class="card fs-card">
-            <div class="header">{d}</div>
-            <div class="content">
-                <p>Test results for {d} filesystem</p>
-                <a href="{d}/index.html" class="link fs-link">View Results</a>
-            </div>
-        </div>
-"""
-        
-        html += """
-    </div>
+        <h2>Filesystem Test Results</h2>
+        <div class="grid-container">
 """
 
-    # Close HTML tags
+        for d in fs_dirs:
+            html += f"""
+            <div class="card fs-card">
+                <div class="header">{d}</div>
+                <div class="content">
+                    <p>Test results for {d} filesystem</p>
+                    <a href="{d}/index.html" class="link fs-link">View Results</a>
+                </div>
+            </div>
+"""
+
+        html += """
+        </div>
+"""
+
+    # Add footer with small logo
     html += """
+        <div class="footer">
+            <img src="https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png" alt="kdevops logo" class="logo-small">
+            <p>kdevops: Linux Kernel Test Automation</p>
+        </div>
+    </div>
 </body>
 </html>
 """
@@ -463,9 +508,8 @@ def create_master_index(output_dir):
     index_path = os.path.join(output_dir, 'index.html')
     with open(index_path, 'w') as f:
         f.write(html)
-    
-    print(f"Master index created at {index_path}")
 
+    print(f"Master index created at {index_path}")
 
 def process_commits_in_range(start_commit=None, end_commit="HEAD", output_dir="dashboard"):
     """
