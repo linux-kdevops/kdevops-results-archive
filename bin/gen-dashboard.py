@@ -212,34 +212,61 @@ def parse_commit(commit_id):
 
     return data
 
+def should_process_with_fs_handler(tree, subject):
+    """
+    Determines if a commit should be processed with fs_handler.py.
+    """
+
+    # Valid trees to process.
+    valid_trees = ["linux", "linux-next", "linux-stable"]
+
+    # Valid subjects
+    valid_subjects = ["linux-xfs-kpd", "linux-ext4-kpd", "linux-btrfs-kpd", "linux-tmpfs-kpd"]
+
+    # kdevops will *always* test fstests, but we don't want those tests
+    # to be counted as valid fstests, those test are simply done to ensure
+    # we can build linux, build fstests, and run at least one test.
+    if subject.startswith("kdevops:") or subject.startswith("kdevops-kpd:"):
+        return False
+
+    # Check if the tree matches one of the valid trees we support
+    if tree not in valid_trees:
+        return True
+
+    # Check if the tree matches one of the valid trees we support
+    if subject not in valid_subjects:
+        return True
+
+    return False
 
 def generate_dashboard(commit_id, output_dir='.'):
     """
     Generate a dashboard HTML file and associated JSON data for the given commit.
     """
-    # Parse the commit and get the basic data
     print(f"Parsing commit {commit_id}...")
     data = parse_commit(commit_id)
-    
-    # If this is not a relevant test commit, return None
+
     if not data:
         print(f"Commit {commit_id} is not a relevant test commit. Skipping.")
         return None
 
+    # Determine the tree from the commit log
+    tree_match = re.search(r"tree:\s+(.*?)\n", data['log'])
+    tree = tree_match.group(1).strip() if tree_match else "unknown"
+
     # Process data based on test type
-    if data['test_type'] == 'fs':
+    if data['test_type'] == 'fs' and should_process_with_fs_handler(tree, data['subject']):
         result = process_fs_data(data, output_dir)
     elif data['test_type'] == 'mm':
         result = process_mm_data(data, output_dir)
     elif data['test_type'] == 'kdevops':
         result = process_kdevops_data(data, output_dir)
     else:
-        print(f"Unknown test type: {data['test_type']}")
+        print(f"Unknown or unsupported test type for commit {commit_id}: {data['test_type']}")
         return None
-        
+
     # Update the main index
     create_master_index(output_dir)
-    
     return result
 
 def create_master_index(output_dir):
