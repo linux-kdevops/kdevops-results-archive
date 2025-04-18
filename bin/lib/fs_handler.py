@@ -187,80 +187,87 @@ def process_data(data, output_dir):
     fs_dir = os.path.join(output_dir, fs_type)
     os.makedirs(fs_dir, exist_ok=True)
     
-    # Determine the HTML filename
-    html_filename = get_html_filename(data)
+    # Generate the HTML filename
+    base_html_filename = get_html_filename(data)
+    base_file_path = os.path.join(fs_dir, base_html_filename)
     
-    # Write the JSON data file
-    json_path = os.path.join(fs_dir, html_filename.replace('.html', '.json'))
+    # Get current commit's short ID
+    current_commit_id = data['commit'][:8]
     
-    # Remove existing file if it exists
-    if os.path.exists(json_path):
-        os.remove(json_path)
+    # Create a filename with the current commit ID included
+    base_name = base_html_filename.replace('.html', '')
+    commit_html_filename = f"{base_name}-{current_commit_id}.html"
+    commit_file_path = os.path.join(fs_dir, commit_html_filename)
     
+    # Check if the base file already exists
+    if os.path.exists(base_file_path):
+        # Use the commit ID version for the current (newer) file
+        html_path = commit_file_path
+        json_path = os.path.join(fs_dir, commit_html_filename.replace('.html', '.json'))
+        
+        print(f"Base file exists - using {commit_html_filename} for current commit")
+    else:
+        # Use the base filename for the current file (first one to use this kernel version)
+        html_path = base_file_path
+        json_path = os.path.join(fs_dir, base_html_filename.replace('.html', '.json'))
+        
+        print(f"Base file does not exist - using {base_html_filename} for current commit")
+    
+    # Write the JSON data
     with open(json_path, 'w') as f:
         json.dump(data, f, indent=2)
     print(f"JSON data written to {json_path}")
     
-    # Create HTML file path
-    html_path = os.path.join(fs_dir, html_filename)
-    
-    # Remove existing HTML if it exists
-    if os.path.exists(html_path):
-        os.remove(html_path)
-    
-    # Get the HTML template
+    # Create HTML file
     template_html = create_html_template()
-    
-    # Replace filesystem placeholder
     template_html = template_html.replace("FILESYSTEM_TYPE", fs_type)
-    
-    # Replace placeholder with actual JSON data
     dashboard_html = template_html.replace(
-        "const testData = DATA_PLACEHOLDER;", 
+        "const testData = DATA_PLACEHOLDER;",
         f"const testData = {json.dumps(data, indent=4)};"
     )
     
-    # Write the HTML dashboard
     with open(html_path, 'w') as f:
         f.write(dashboard_html)
     
     print(f"Dashboard HTML written to {html_path}")
     
-    # Collect data for the index
-    index_result = {
-        'url': html_filename,
-        'display_name': html_filename.replace('.html', ''),
+    # Add the current file data for the index
+    current_result = {
+        'url': os.path.basename(html_path),
+        'display_name': os.path.basename(html_path).replace('.html', ''),
         'type': data.get('kernel_type', 'development'),
         'date': data.get('date', ''),
         'failure_count': data.get('totals', {}).get('failure_count', 0)
     }
     
-    # Find all existing HTML files (except index.html) to compile index
-    all_results = [index_result]  # Start with the current result
-    html_files = [f for f in os.listdir(fs_dir) if f.endswith('.html') and f != 'index.html' and f != html_filename]
+    # Collect all HTML files for the index (except index.html itself)
+    html_files = [f for f in os.listdir(fs_dir) 
+                 if f.endswith('.html') and f != 'index.html' 
+                 and f != os.path.basename(html_path)]
     
+    all_results = [current_result]  # Start with current result
+    
+    # Add all other HTML files
     for html_file in html_files:
         # Find the corresponding JSON file
         json_file = html_file.replace('.html', '.json')
-        json_path = os.path.join(fs_dir, json_file)
+        file_json_path = os.path.join(fs_dir, json_file)
         
-        if os.path.exists(json_path):
+        if os.path.exists(file_json_path):
             try:
-                with open(json_path, 'r') as f:
+                with open(file_json_path, 'r') as f:
                     file_data = json.load(f)
                 
-                # Extract relevant information
-                result = {
+                # Add to results
+                all_results.append({
                     'url': html_file,
                     'display_name': html_file.replace('.html', ''),
                     'type': file_data.get('kernel_type', 'development'),
                     'date': file_data.get('date', ''),
                     'failure_count': file_data.get('totals', {}).get('failure_count', 0)
-                }
-                
-                all_results.append(result)
+                })
             except Exception as e:
-                print(f"Error processing {json_path}: {e}")
+                print(f"Error processing {file_json_path}: {e}")
     
     # Update the index page
     update_index_page(fs_dir, all_results)
