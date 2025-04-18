@@ -37,6 +37,21 @@ def create_html_template():
             color: var(--dark-color);
             line-height: 1.6;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.1;
+            z-index: -1;
+        }
         
         .container {
             max-width: 1200px;
@@ -394,6 +409,21 @@ def create_index_template():
             background-color: var(--light-color);
             color: var(--dark-color);
             line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.1;
+            z-index: -1;
         }
         
         .container {
