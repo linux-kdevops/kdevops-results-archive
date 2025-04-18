@@ -522,10 +522,11 @@ def create_master_index(output_dir):
 
     # Add footer with small logo
     html += """
-        <div class="footer">
-            <img src="https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png" alt="kdevops logo" class="logo-small">
-            <p>kdevops: Linux Kernel Test Automation</p>
-        </div>
+    <div class="footer">
+        <a href="https://github.com/linux-kdevops/kdevops-results-archive" alt="kdevops-results-archive git tree">
+        <img src="https://github.com/linux-kdevops/kdevops-results-archive/raw/main/images/kdevops-archive.png" alt="kdevops logo" class="logo-small">
+        </a>
+    </div>
     </div>
 </body>
 </html>

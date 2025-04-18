@@ -234,7 +234,25 @@ def create_html_template():
         .tab-content.active {
             display: block;
         }
-        
+
+        .header-content {
+            display: flex; /* Use flexbox to align children */
+            justify-content: space-between; /* Space between text and the image */
+            align-items: center; /* Vertically align text and image */
+            gap: 10px; /* Space between the text and the image */
+        }
+
+        .header-text {
+            flex: 1; /* Text takes available space */
+            margin: 0; /* Remove extra margin around the heading */
+        }
+
+        .header-logo {
+            width: 40px; /* Adjust logo size */
+            height: auto; /* Maintain aspect ratio */
+            opacity: 0.8;
+        }
+
         @media (max-width: 768px) {
             .summary-cards {
                 grid-template-columns: 1fr;
@@ -243,13 +261,36 @@ def create_html_template():
             .profile-grid {
                 grid-template-columns: 1fr;
             }
+
+            .header-text {
+                flex: 1; /* Text takes available space */
+                margin: 0; /* Remove extra margin around the heading */
+            }
+
+            .header-content {
+                flex-direction: column; /* Stack text and image */
+                text-align: center;
+            }
+
+            .header-logo {
+                width: 20px; /* Slightly smaller on small screens */
+                height: auto; /* Maintain aspect ratio */
+            }
         }
+
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>fstests results dashboard - FILESYSTEM_TYPE</h1>
+             <div class="header-content">
+                <div class="header-text">
+                    <h1>fstests results dashboard - FILESYSTEM_TYPE</h1>
+                </div>
+                <a href="https://github.com/linux-kdevops/kdevops-results-archive" alt="kdevops-results-archive git tree">
+                <img src="https://github.com/linux-kdevops/kdevops-results-archive/raw/main/images/kdevops-archive.png" alt="kdevops-results-archive logo" class="header-logo">
+                </a>
+            </div>
         </div>
     </header>
     
@@ -772,28 +813,76 @@ def create_index_template():
             font-size: 0.9em;
             border-top: 1px solid #eee;
         }
-        
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between; /* Space between text and images */
+            align-items: center; /* Vertically align text and images */
+            gap: 20px; /* Space between the text and the image container */
+            text-align: left;
+        }
+
+        .header-text {
+            flex: 1; /* Allow text to take up as much space as needed */
+        }
+
+        .header-logos {
+            display: flex;
+            flex-direction: row; /* Align images side-by-side */
+            align-items: center; /* Center the images vertically */
+            gap: 10px; /* Space between the images */
+        }
+
+        .header-logo {
+            width: 40px; /* Adjust size of logos */
+            height: auto; /* Automatically adjust height to maintain aspect ratio */
+            opacity: 0.8;
+        }
+
         @media (max-width: 768px) {
             .panel-container {
                 grid-template-columns: 1fr;
             }
-            
+
             .header-content {
-                flex-direction: column;
+                flex-direction: column; /* Stack text and images vertically */
                 text-align: center;
             }
-            
+
+            .header-text {
+                margin-bottom: 20px;
+            }
+
+            .header-logos {
+                flex-direction: row; /* Keep images side-by-side even on small screens */
+                gap: 10px;
+            }
+
             .header-logo {
-                margin: 10px 0 0 0;
+                width: 20px; /* Slightly smaller logos on small screens */
+                height: auto; /* Maintain aspect ratio */
             }
         }
+
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <h1>FILESYSTEM fstests results</h1>
-            <img src="https://github.com/linux-kdevops/kdevops/raw/main/images/kdevops-trans-bg-edited-individual-with-logo-gausian-blur-1600x1600.png" alt="kdevops logo" class="header-logo">
+            <div class="header-text"><h1>FILESYSTEM fstests results</h1></div>
+            <div class="header-logos">
+                <a href="https://github.com/linux-kdevops/kdevops-results-archive" alt="kdevops-results-archive git tree">
+                <img src="https://github.com/linux-kdevops/kdevops-results-archive/raw/main/images/kdevops-archive.png" alt="kdevops-results-archive logo" class="header-logo">
+                </a>
+            </div>
         </div>
     </header>
     
