@@ -277,6 +277,9 @@ def process_data(data, output_dir):
             except Exception as e:
                 print(f"Error processing {json_path}: {e}")
     
+    # Sort results by date (newest first) before updating index
+    all_results.sort(key=lambda x: x.get('date', ''), reverse=True)
+
     # Update the index page
     update_index_page(kdevops_dir, all_results)
     
