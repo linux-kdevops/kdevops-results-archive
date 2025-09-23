@@ -99,6 +99,42 @@ The pre-commit hook enforces:
 - View results by opening `dashboard/index.html` in a browser
 - Dashboard generation typically takes 1-2 seconds for the full archive
 
+## Commit Format for Dashboard Processing
+
+The dashboard system expects commits with structured metadata in specific format:
+
+### Standard Commit Structure
+```
+Subject: kdevops: Merge pull request #33 from linux-kdevops/branch-name
+
+This adds test results for:
+  workflow: fstests
+  tree: linux
+  ref: linux
+  test number: 0004
+  test result: ok
+
+Detailed test report:
+
+KERNEL:    6.15.0
+CPUS:      8
+
+xfs_reflink_4k: 1 tests, 17 seconds
+  generic/003  Pass     14s
+Totals: 1 tests, 0 skipped, 0 failures, 0 errors, 14s
+```
+
+### Handler Routing Logic
+- **kdevops_handler.py**: Subject starts with "kdevops:" (not "CI:")
+- **fs_handler.py**: Subject contains filesystem identifiers (linux-ext4-kpd, linux-xfs-kpd, etc.)
+- **mm_handler.py**: Subject contains "linux-mm-kpd:" and workflow includes "selftests"
+
+### Generated Dashboard Files
+- **HTML**: `dashboard/{handler}/YYYY-MM-DD_testNNNN.html` (for kdevops)
+- **JSON**: `dashboard/{handler}/YYYY-MM-DD_testNNNN.json` 
+- **Index**: `dashboard/{handler}/index.html` (updated with new entry)
+- **Master**: `dashboard/index.html` (updated if new handler type)
+
 ## Integration Notes
 
 - This repository should be placed alongside the main kdevops repository (not inside it)
