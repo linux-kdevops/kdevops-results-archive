@@ -85,3 +85,65 @@ To see fstests results you can use something like this:
 tar -xOJf fstests/mcgrof/xfs/libvirt-qemu/20240505-0001/6.9.0-rc6.xz 6.9.0-rc6/xfs_reflink_1024/xfs/033.out.bad
 tar -xOJf fstests/mcgrof/xfs/libvirt-qemu/20240505-0001/6.9.0-rc6.xz 6.9.0-rc6/xfs_reflink_1024/xfs/033.dmesg
 ```
+
+# Comparing fstests results
+
+The `bin/compare-results-fstests.py` script allows you to compare test results between two commits to identify regressions and fixes. The script parses commit messages containing structured fstests results and provides a detailed comparison.
+
+## Usage
+
+Basic usage:
+```bash
+./bin/compare-results-fstests.py <baseline-commit> <test-commit>
+```
+
+Verbose output with detailed side-by-side comparison:
+```bash
+./bin/compare-results-fstests.py <baseline-commit> <test-commit> --verbose
+```
+
+## Output Modes
+
+### Default Mode
+Shows only changed test results:
+- Lists new failures (regressions) with `+` prefix
+- Lists resolved failures (fixes) with `-` prefix
+- Organized by test profile
+- Reports "No changes" if test results are identical
+
+### Verbose Mode (`--verbose` or `-v`)
+Provides a comprehensive side-by-side comparison:
+- Displays all tests from both commits in a table format
+- Shows `[pass]` or `[fail]` status for baseline and test
+- Annotates regressions with `--> regression`
+- Annotates fixes with `--> fixed`
+- Includes summary statistics (total regressions, fixes, unchanged failures)
+
+## Features
+
+- **Automatic kernel version detection**: Extracts KERNEL: line from commit messages
+- **Multi-profile support**: Handles multiple filesystem test profiles (xfs, ext4, btrfs, etc.)
+- **Smart failure resolution**: Only marks a failure as resolved if it doesn't appear in any other test profile
+- **Commit summary display**: Shows abbreviated commit IDs and subject lines for easy reference
+
+## Example
+
+```bash
+# Compare two test runs
+./bin/compare-results-fstests.py 8ffd015db85f a1b2c3d4e5f6
+
+# Get detailed verbose output
+./bin/compare-results-fstests.py 8ffd015db85f a1b2c3d4e5f6 -v
+```
+
+## Requirements
+
+The script expects commit messages to contain structured test results in the following format:
+```
+KERNEL: <kernel-version>
+
+<profile_name>: <N> tests, ...
+  Failures: <test1> <test2> ...
+
+Totals: ...
+```
